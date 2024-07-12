@@ -16,7 +16,7 @@
             border-radius: 5px;
         }
 
-        input[type="text"] {
+        input[type="text"],input[type="url"] {
             width: 100%;
             padding: 10px;
             margin-bottom: 10px;
@@ -24,6 +24,34 @@
             border: 1px solid #ccc;
             border-radius: 4px;
             font-size: 14px;
+        }
+        #pic{
+            width: 60%;
+            height: auto;
+        }
+        #cont{
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    gap: 20px; 
+    text-align: center;      
+        }
+        #box1{
+        display: flex;
+        flex-wrap: wrap;
+        /* margin-left: 70px; */
+        margin-top: 20px;
+        text-align: center;
+    
+        }
+        #edit{
+            margin-right: 30px;
+            background-color: darkgreen;
+            width: 60px;
+        }
+        #delete{
+            background-color: red;
+            width: 75px;
+            margin-left: 30px;
         }
 
         button {
@@ -48,71 +76,27 @@
             outline: none;
         }
 
-        table {
-            border-collapse: collapse;
-            width: 70%;
-            margin-top: 20px; /* Add margin for spacing */
-            margin: auto;
-        }
-
-        table, th, td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: center;
-        }
-
-        button.table-button {
-            padding: 5px 10px;
-            margin-right: 5px;
-            cursor: pointer;
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-
-        button.table-button:hover {
-            background-color: #0056b3;
-        }
-
-        h1, h3 {
-            margin: 0;
-            font-family: Arial, sans-serif;
-        }
-
-        tbody {
-            font-family: Arial, sans-serif;
-            font-size: 14px;
-        }
+        
     </style>
 </head>
 <body>
     <form id="form">
         Name: <input type="text" id="name"><br><br>
         Email: <input type="text" id="email"><br><br>
+        Photo: <input type="url" id="photo"><br><br>
         <button id="btn">Submit</button>
     </form>
 
     <div id="cont"></div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody id="tbody">
-            <!-- Table rows will be dynamically added here -->
-        </tbody>
+ 
     </table>
 
     <script>
         let form = document.getElementById("form");
         let nameInput = document.getElementById("name");
         let emailInput = document.getElementById("email");
+        let photoInput = document.getElementById("photo");
         let state = false;
         let arr = [];
         let currentid = null; // Track current edit id
@@ -120,7 +104,8 @@
         async function postdata() {
             let obj = {
                 name: nameInput.value,
-                email: emailInput.value
+                email: emailInput.value,
+                photo: photoInput.value
             };
             try {
                 let res = await axios.post("https://jason-server-new.onrender.com/data", obj);
@@ -143,25 +128,28 @@
         }
 
         async function displaydata() {
-            let tbody = document.getElementById("tbody");
-            tbody.innerHTML = ""; // Clear existing rows
+           let cont = document.getElementById("cont");
+           cont.innerHTML = "";
 
             arr.forEach(ele => {
-                let tr = document.createElement("tr");
-
-                let td1 = document.createElement("td");
+                let div = document.createElement("div");
+                 div.id="box"
                 let name = document.createElement("h1");
                 name.innerText = ele.name;
-                td1.appendChild(name);
 
-                let td2 = document.createElement("td");
                 let email = document.createElement("h3");
                 email.innerText = ele.email;
-                td2.appendChild(email);
 
-                let td3 = document.createElement("td");
+                let photo=document.createElement("img")
+                photo.src=ele.photo;
+                photo.id="pic"
+                
+                let div1=document.createElement("div")
+                div1.id="box1"
+                
                 let editBtn = document.createElement("button");
                 editBtn.innerText = "Edit";
+                editBtn.id="edit"
                 editBtn.classList.add("table-button");
                 editBtn.addEventListener("click", () => {
                     getdataforedit(ele);
@@ -169,19 +157,14 @@
 
                 let deleteBtn = document.createElement("button");
                 deleteBtn.innerText = "Delete";
+                deleteBtn.id="delete"
                 deleteBtn.classList.add("table-button");
                 deleteBtn.addEventListener("click", () => {
                     deletdata(ele.id);
                 });
-
-                td3.appendChild(editBtn);
-                td3.appendChild(deleteBtn);
-
-                tr.appendChild(td1);
-                tr.appendChild(td2);
-                tr.appendChild(td3);
-
-                tbody.appendChild(tr);
+                cont.append(div)
+                div1.append(editBtn, deleteBtn)
+                div.append(name, email, photo,div1);
             });
         }
 
@@ -199,6 +182,7 @@
         function getdataforedit(data) {
             nameInput.value = data.name;
             emailInput.value = data.email;
+            photoInput.value = data.photo;
             currentid = data.id;
             state = true;
             btn.innerText = "Update";
@@ -207,7 +191,8 @@
         async function updatedata() {
             let updateobj = {
                 name: nameInput.value,
-                email: emailInput.value
+                email: emailInput.value,
+                photo: photoInput.value
             };
             try {
                 let res = await axios.patch(`https://jason-server-new.onrender.com/data/${currentid}`, updateobj);
